@@ -3,4 +3,4 @@ db:
   host: localhost:27017
 port: 5008
 delay: 300
-source: https://bittrex.com/api/v1.1/public/
+source: https://api.bittrex.com/v3/

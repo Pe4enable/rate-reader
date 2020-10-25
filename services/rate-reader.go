@@ -17,7 +17,7 @@ import (
 
 const (
 	requestDelay       = 10000
-	getMarketSummaries = "getmarketsummaries"
+	getMarketSummaries = "markets/summaries"
 	delayAfterError    = time.Second * 30
 )
 
@@ -84,7 +84,8 @@ func (rr *rateReader) Start(ctx context.Context) (err error) {
 				continue
 			}
 
-			parsedData := &rawData{}
+			parsedData := &[]models.Rate{}
+
 			if err := json.Unmarshal(raw, parsedData); err != nil {
 				log.Errorf("failed to parse current rates: %s", err)
 				time.Sleep(delayAfterError)
@@ -92,7 +93,7 @@ func (rr *rateReader) Start(ctx context.Context) (err error) {
 			}
 
 			currentRates := &models.Rates{}
-			currentRates.Rates = parsedData.Result
+			currentRates.Rates = *parsedData
 			currentRates.TimeStamp = time.Now()
 			currentRates, err = rr.rp.PutRates(ctx, currentRates)
 			if err != nil {
@@ -134,10 +135,4 @@ func (rr *rateReader) restRequest(ctx context.Context, method, url string, body 
 	log := logger.FromContext(ctx)
 	log.Debugf("response: %s", string(respBody))
 	return respBody, err
-}
-
-type rawData struct {
-	Success bool `json:"success"`
-	Result  []models.Rate      `json:"result"`
-	Message string         `json:"message"`
 }
