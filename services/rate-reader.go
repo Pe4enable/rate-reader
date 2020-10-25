@@ -45,7 +45,7 @@ func NewReader(ctx context.Context, config *config.Config, rp repositories.IRepo
 		reader = &rateReader{
 			rp:    rp,
 			conf:  config,
-			delay: time.Duration(config.Delay) * time.Millisecond,
+			delay: time.Duration(config.Delay) * time.Second,
 			httpClient: http.Client{
 				Timeout:   time.Duration(requestDelay) * time.Millisecond,
 				Transport: &http.Transport{},
@@ -84,18 +84,21 @@ func (rr *rateReader) Start(ctx context.Context) (err error) {
 				continue
 			}
 
-			currentRates := &models.Rates{}
-			if err := json.Unmarshal(raw, currentRates); err != nil {
+			parsedData := &rawData{}
+			if err := json.Unmarshal(raw, parsedData); err != nil {
 				log.Errorf("failed to parse current rates: %s", err)
 				time.Sleep(delayAfterError)
 				continue
 			}
 
+			currentRates := &models.Rates{}
+			currentRates.Rates = parsedData.Result
 			currentRates.TimeStamp = time.Now()
 			currentRates, err = rr.rp.PutRates(ctx, currentRates)
 			if err != nil {
 				log.Errorf("Put rates to db error: %s", err)
 			}
+			log.Infof("Rates rad at %s", currentRates.TimeStamp)
 			time.Sleep(rr.delay)
 		}
 	}()
@@ -131,4 +134,10 @@ func (rr *rateReader) restRequest(ctx context.Context, method, url string, body 
 	log := logger.FromContext(ctx)
 	log.Debugf("response: %s", string(respBody))
 	return respBody, err
+}
+
+type rawData struct {
+	Success bool `json:"success"`
+	Result  []models.Rate      `json:"result"`
+	Message string         `json:"message"`
 }
