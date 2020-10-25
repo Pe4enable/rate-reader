@@ -4,21 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/rate-reader/config"
-	"github.com/rate-reader/logger"
-	"github.com/rate-reader/models"
-	"github.com/rate-reader/repositories"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"rate-reader/config"
+	"rate-reader/logger"
+	"rate-reader/models"
+	"rate-reader/repositories"
 	"sync"
 	"time"
 )
 
 const (
-	requestDelay = 10000
+	requestDelay       = 10000
 	getMarketSummaries = "getmarketsummaries"
-	delayAfterError = time.Second * 30
+	delayAfterError    = time.Second * 30
 )
 
 type IRateReader interface {
@@ -27,10 +27,10 @@ type IRateReader interface {
 }
 
 type rateReader struct {
-	rp               repositories.IRepository
-	conf             *config.Config
-	delay 			 time.Duration
-	stopListen       chan struct{}
+	rp         repositories.IRepository
+	conf       *config.Config
+	delay      time.Duration
+	stopListen chan struct{}
 	httpClient http.Client
 }
 
@@ -43,8 +43,8 @@ func NewReader(ctx context.Context, config *config.Config, rp repositories.IRepo
 	onceRateReader.Do(func() {
 
 		reader = &rateReader{
-			rp:               rp,
-			conf:             config,
+			rp:    rp,
+			conf:  config,
 			delay: time.Duration(config.Delay) * time.Millisecond,
 			httpClient: http.Client{
 				Timeout:   time.Duration(requestDelay) * time.Millisecond,
@@ -77,7 +77,7 @@ func (rr *rateReader) Start(ctx context.Context) (err error) {
 			default:
 			}
 
-			raw, err := rr.restRequest(ctx, http.MethodGet, rr.conf.Source + getMarketSummaries, nil)
+			raw, err := rr.restRequest(ctx, http.MethodGet, rr.conf.Source+getMarketSummaries, nil)
 			if err != nil {
 				log.Errorf("failed to get rates from source: %s", err)
 				time.Sleep(delayAfterError)
@@ -91,7 +91,7 @@ func (rr *rateReader) Start(ctx context.Context) (err error) {
 				continue
 			}
 
-			currentRates.TimeStamp =time.Now()
+			currentRates.TimeStamp = time.Now()
 			currentRates, err = rr.rp.PutRates(ctx, currentRates)
 			if err != nil {
 				log.Errorf("Put rates to db error: %s", err)

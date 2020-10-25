@@ -2,11 +2,11 @@ package repositories
 
 import (
 	"context"
-	"github.com/rate-reader/config"
-	"github.com/rate-reader/logger"
-	"github.com/rate-reader/models"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"rate-reader/config"
+	"rate-reader/logger"
+	"rate-reader/models"
 	"sync"
 	"time"
 )
@@ -17,6 +17,7 @@ const (
 
 type IRepository interface {
 	PutRates(ctx context.Context, rates *models.Rates) (*models.Rates, error)
+	GetRates(ctx context.Context) (rates []*models.Rates, err error)
 }
 
 type Repository struct {

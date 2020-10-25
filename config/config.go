@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	logger "github.com/rate-reader/logger"
 	"github.com/spf13/viper"
+	logger "rate-reader/logger"
 )
 
 var Cfg *Config

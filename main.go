@@ -1,14 +1,17 @@
-package rate_reader
+package main
 
 import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/rate-reader/config"
-	logger "github.com/rate-reader/logger"
-	repository "github.com/rate-reader/repositories"
-	services "github.com/rate-reader/services"
+	"net/http"
 	"os"
+	"rate-reader/config"
+	logger "rate-reader/logger"
+	repository "rate-reader/repositories"
+	"rate-reader/rest/handlers"
+	"rate-reader/rest/router"
+	services "rate-reader/services"
 )
 
 func main() {
@@ -46,6 +49,14 @@ func main() {
 	}
 	defer rateReader.Stop(ctx)
 
+	handlers := handlers.NewHandlerService(repository.GetRepository())
+	rd := router.New(handlers)
+
+	httpServer := http.Server{Addr: ":" + config.Cfg.Port, Handler: rd}
+	if err := httpServer.ListenAndServe(); err != nil {
+		log.Error("initialization of rest server fails", err)
+	}
+	log.Infof("Rest server is started on %s port", config.Cfg.Port)
 }
 
 // initLogger initializes logger: create logger, set logger format: json or text.

@@ -1,0 +1,67 @@
+swagger: "2.0"
+info:
+  description: "API for Rate Reader"
+  version: "0.0.1"
+  title: "Rate Reader"
+host: ""
+schemes:
+  - "http"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+paths:
+  /api/v1/help:
+    get:
+      summary: Service API documentation
+      description: |
+        Swagger documentation rendered by ReDoc
+      produces:
+        - text/html
+      responses:
+        200:
+          description: Documentation page
+      tags:
+        - basic
+  /api/v1/assetChains?id={id}:
+    get:
+      summary: "Asset chain details"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "id of asset (AssetChainEntry.id)"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "assetChain"
+          schema:
+            $ref: "#/definitions/AssetChainEntry"
+        500:
+          description: "Something went wrong"
+      tags:
+        - rates
+definitions:
+  AssetChainEntry:
+    type: "object"
+    description: field 'wavesAsset' contains data of asset in WAVES blockchain. Field 'externalAsset' contains
+      data of asset in another blockchain rather than WAVES, which is linked with 'wavesAsset'
+    properties:
+      assetChainId:
+        type: "integer"
+      wavesAsset:
+        $ref: "#/definitions/AssetEntry"
+      externalAsset:
+        $ref: "#/definitions/AssetEntry"
+      inCommission:
+        $ref: "#/definitions/CommissionEntry"
+      outCommission:
+        $ref: "#/definitions/CommissionEntry"
+      inLimit:
+        $ref: "#/definitions/LimitEntry"
+      outLimit:
+        $ref: "#/definitions/LimitEntry"
+      inTxLimit:
+        $ref: "#/definitions/TxLimitEntry"
+      outTxLimit:
+        $ref: "#/definitions/TxLimitEntry"

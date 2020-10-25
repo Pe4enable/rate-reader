@@ -3,9 +3,9 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"github.com/rate-reader/logger"
-	"github.com/rate-reader/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"rate-reader/logger"
+	"rate-reader/models"
 )
 
 func (rep *Repository) PutRates(ctx context.Context, rates *models.Rates) (*models.Rates, error) {
@@ -22,4 +22,19 @@ func (rep *Repository) PutRates(ctx context.Context, rates *models.Rates) (*mode
 		return rates, nil
 	}
 	return nil, fmt.Errorf("rates id is not empty: %s", rates.Id)
+}
+
+func (rep *Repository) GetRates(ctx context.Context) (rates []*models.Rates, err error) {
+	log := logger.FromContext(ctx)
+	log.Debugf("GetRates")
+
+	rates = make([]*models.Rates, 0)
+	_, err = rep.ratesC.Find(ctx, &rates)
+
+	if err != nil {
+		log.Errorf("GetRates from DB fails: %s", err)
+		return nil, err
+	}
+
+	return rates, nil
 }
