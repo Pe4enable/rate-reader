@@ -9,11 +9,11 @@ RUN apk add git
 
 COPY ./go.mod ./go.sum ./
 RUN go mod download
-RUN CGO_ENABLED=1 GOOS=linux go build -o main .
+RUN CGO_ENABLED=1 GOOS=linux go build -o main cmd/reader/main.go
 
 FROM alpine
 COPY --from=0 /go/src/github.com/rate-reader /
-COPY config/config.y*ml /config
+COPY internal/config /config
 RUN apk add --no-cache ca-certificates && update-ca-certificates 2>/dev/null || true
 
 EXPOSE 5006

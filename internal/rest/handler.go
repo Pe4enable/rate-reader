@@ -1,17 +1,17 @@
-package handlers
+package rest
 
 import (
 	"net/http"
-	"rate-reader/logger"
-	"rate-reader/repositories"
+	"rate-reader/internal/logger"
+	"rate-reader/internal/repositories"
 )
 
 type HandlersService struct {
-	rep repositories.IRepository
+	rep repositories.Repository
 }
 
 func NewHandlerService(
-	rep repositories.IRepository) *HandlersService {
+	rep repositories.Repository) *HandlersService {
 	return &HandlersService{
 		rep: rep,
 	}

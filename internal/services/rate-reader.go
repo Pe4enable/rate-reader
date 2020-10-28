@@ -7,10 +7,10 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"rate-reader/config"
-	"rate-reader/logger"
-	"rate-reader/models"
-	"rate-reader/repositories"
+	"rate-reader/internal/config"
+	"rate-reader/internal/logger"
+	"rate-reader/internal/models"
+	"rate-reader/internal/repositories"
 	"sync"
 	"time"
 )
@@ -27,7 +27,7 @@ type IRateReader interface {
 }
 
 type rateReader struct {
-	rp         repositories.IRepository
+	rp         repositories.Repository
 	conf       *config.Config
 	delay      time.Duration
 	stopListen chan struct{}
@@ -39,7 +39,7 @@ var (
 	onceRateReader sync.Once
 )
 
-func NewReader(ctx context.Context, config *config.Config, rp repositories.IRepository) error {
+func NewReader(ctx context.Context, config *config.Config, rp repositories.Repository) error {
 	onceRateReader.Do(func() {
 
 		reader = &rateReader{
@@ -71,6 +71,9 @@ func (rr *rateReader) Start(ctx context.Context) (err error) {
 	go func() {
 		for {
 			select {
+			case <-ctx.Done():
+				log.Infof("Stop reading rates.")
+				return
 			case <-rr.stopListen:
 				log.Infof("Stop reading rates.")
 				return
@@ -101,6 +104,7 @@ func (rr *rateReader) Start(ctx context.Context) (err error) {
 			}
 			log.Infof("Rates rad at %s", currentRates.TimeStamp)
 			time.Sleep(rr.delay)
+
 		}
 	}()
 
@@ -110,7 +114,7 @@ func (rr *rateReader) Start(ctx context.Context) (err error) {
 func (rr *rateReader) Stop(ctx context.Context) {
 	log := logger.FromContext(ctx)
 	log.Info("Stop reading rates.")
-	rr.stopListen <- struct{}{}
+	close(rr.stopListen)
 	return
 }
 

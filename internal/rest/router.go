@@ -1,4 +1,4 @@
-package router
+package rest
 
 import (
 	"html/template"
@@ -7,10 +7,9 @@ import (
 
 	globalHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"rate-reader/rest/handlers"
 )
 
-func New(handlers *handlers.HandlersService) http.Handler {
+func New(handlers *HandlersService) http.Handler {
 	r := mux.NewRouter()
 	defineRoutes(r, handlers)
 
@@ -24,7 +23,7 @@ func defineMiddlewares(r *mux.Router) http.Handler {
 	return router
 }
 
-func defineRoutes(r *mux.Router, handlers *handlers.HandlersService) {
+func defineRoutes(r *mux.Router, handlers *HandlersService) {
 	apiSubRouter := r.PathPrefix("/api/v1").Subrouter()
 	apiSubRouter.HandleFunc("/help", getHelp).Methods("GET")
 	apiSubRouter.HandleFunc("/swagger.yml", swagger).Methods("GET")

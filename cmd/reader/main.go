@@ -6,17 +6,16 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"rate-reader/config"
-	logger "rate-reader/logger"
-	repository "rate-reader/repositories"
-	"rate-reader/rest/handlers"
-	"rate-reader/rest/router"
-	services "rate-reader/services"
+	"rate-reader/internal/config"
+	logger "rate-reader/internal/logger"
+	repository "rate-reader/internal/repositories"
+	"rate-reader/internal/rest"
+	services "rate-reader/internal/services"
 )
 
 func main() {
 	var configPath string
-	flag.StringVar(&configPath, "config-path", "./config/config.yml", "A path to config file")
+	flag.StringVar(&configPath, "config-path", "./internal/config/config.yml", "A path to config file")
 	isDebugMode := flag.Bool("debug", false, "debug mode")
 	flag.Parse()
 
@@ -33,11 +32,12 @@ func main() {
 	ctx := context.Background()
 	ctx = logger.ToContext(ctx, log)
 
-	if err := repository.New(ctx, config.Cfg.Db); err != nil {
+	rep, err := repository.New(ctx, config.Cfg.Db)
+	if err != nil {
 		log.Fatal("Can't create repository: ", err)
 	}
 
-	if err := services.NewReader(ctx, config.Cfg, repository.GetRepository()); err != nil {
+	if err := services.NewReader(ctx, config.Cfg, rep); err != nil {
 		log.Fatal("Can't create rate reader: ", err)
 	}
 
@@ -49,8 +49,8 @@ func main() {
 	}
 	defer rateReader.Stop(ctx)
 
-	handlers := handlers.NewHandlerService(repository.GetRepository())
-	rd := router.New(handlers)
+	handlers := rest.NewHandlerService(rep)
+	rd := rest.New(handlers)
 
 	httpServer := http.Server{Addr: ":" + config.Cfg.Port, Handler: rd}
 	if err := httpServer.ListenAndServe(); err != nil {

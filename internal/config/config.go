@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
-	logger "rate-reader/logger"
+	logger "rate-reader/internal/logger"
 )
 
 var Cfg *Config

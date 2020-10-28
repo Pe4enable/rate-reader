@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"rate-reader/logger"
-	"rate-reader/models"
+	"rate-reader/internal/logger"
+	"rate-reader/internal/models"
 )
 
-func (rep *Repository) PutRates(ctx context.Context, rates *models.Rates) (*models.Rates, error) {
+func (rep *MongoRepository) PutRates(ctx context.Context, rates *models.Rates) (*models.Rates, error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("PutRates %+v", rates)
 	if rates.Id.IsZero() {
@@ -24,7 +24,7 @@ func (rep *Repository) PutRates(ctx context.Context, rates *models.Rates) (*mode
 	return nil, fmt.Errorf("rates id is not empty: %s", rates.Id)
 }
 
-func (rep *Repository) GetRates(ctx context.Context) (rates []*models.Rates, err error) {
+func (rep *MongoRepository) GetRates(ctx context.Context) (rates []*models.Rates, err error) {
 	log := logger.FromContext(ctx)
 	log.Debugf("GetRates")
 
