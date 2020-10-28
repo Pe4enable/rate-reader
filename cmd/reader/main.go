@@ -37,11 +37,10 @@ func main() {
 		log.Fatal("Can't create repository: ", err)
 	}
 
-	if err := services.NewReader(ctx, config.Cfg, rep); err != nil {
+	rateReader := services.NewReader(ctx, config.Cfg, rep)
+	if rateReader == nil {
 		log.Fatal("Can't create rate reader: ", err)
 	}
-
-	rateReader := services.GetRateReader()
 
 	err = rateReader.Start(ctx)
 	if err != nil {
@@ -64,7 +63,7 @@ func main() {
 // set log level according to environment variable LOG_LEVEL,
 // if LOG_LEVEL was not set it uses INFO by default,
 // if application was started with flag '-debug' set DEBUG level
-func initLogger(isDebug bool) (logger.ILogger, error) {
+func initLogger(isDebug bool) (logger.Logger, error) {
 	var level = config.LogLevelDefault
 	if isDebug {
 		level = logger.DEBUG

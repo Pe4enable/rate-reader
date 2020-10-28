@@ -11,7 +11,6 @@ import (
 	"rate-reader/internal/logger"
 	"rate-reader/internal/models"
 	"rate-reader/internal/repositories"
-	"sync"
 	"time"
 )
 
@@ -21,7 +20,7 @@ const (
 	delayAfterError    = time.Second * 30
 )
 
-type IRateReader interface {
+type RateReader interface {
 	Start(ctx context.Context) (err error)
 	Stop(ctx context.Context)
 }
@@ -34,34 +33,16 @@ type rateReader struct {
 	httpClient http.Client
 }
 
-var (
-	reader         IRateReader
-	onceRateReader sync.Once
-)
-
-func NewReader(ctx context.Context, config *config.Config, rp repositories.Repository) error {
-	onceRateReader.Do(func() {
-
-		reader = &rateReader{
-			rp:    rp,
-			conf:  config,
-			delay: time.Duration(config.Delay) * time.Second,
-			httpClient: http.Client{
-				Timeout:   time.Duration(requestDelay) * time.Millisecond,
-				Transport: &http.Transport{},
-			},
-		}
-	})
-	return nil
-}
-
-// GetRateReader returns rates reader instance.
-// Client must be previously created with New(), in another case function throws panic
-func GetRateReader() IRateReader {
-	onceRateReader.Do(func() {
-		panic("try to get rate reader before it's creation!")
-	})
-	return reader
+func NewReader(ctx context.Context, config *config.Config, rp repositories.Repository) *rateReader {
+	return &rateReader{
+		rp:    rp,
+		conf:  config,
+		delay: time.Duration(config.Delay) * time.Second,
+		httpClient: http.Client{
+			Timeout:   time.Duration(requestDelay) * time.Millisecond,
+			Transport: &http.Transport{},
+		},
+	}
 }
 
 func (rr *rateReader) Start(ctx context.Context) (err error) {

@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type ILogger interface {
+type Logger interface {
 	With(args ...interface{}) *logger
 
 	Debug(args ...interface{})
@@ -37,13 +37,13 @@ const (
 	ERROR = Level("ERROR")
 )
 
-var def ILogger = nil
+var def Logger = nil
 
 type logger struct {
 	*zap.SugaredLogger
 }
 
-func Init(json bool, level Level) (ILogger, error) {
+func Init(json bool, level Level) (Logger, error) {
 	l, err := newLogger(json, level)
 	if err != nil {
 		return nil, err
@@ -52,21 +52,21 @@ func Init(json bool, level Level) (ILogger, error) {
 	return l, nil
 }
 
-func ToContext(ctx context.Context, l ILogger) context.Context {
+func ToContext(ctx context.Context, l Logger) context.Context {
 	return context.WithValue(ctx, loggerKey, l)
 }
 
 // FromContext returns logger from context with previously added fields.
 // If context has not logger returns default logger
-func FromContext(ctx context.Context) ILogger {
-	if l, ok := ctx.Value(loggerKey).(ILogger); ok {
+func FromContext(ctx context.Context) Logger {
+	if l, ok := ctx.Value(loggerKey).(Logger); ok {
 		return l
 	} else {
 		return GetDefaultLogger()
 	}
 }
 
-func GetDefaultLogger() ILogger {
+func GetDefaultLogger() Logger {
 	if def != nil {
 		return def
 	}
@@ -77,7 +77,7 @@ func GetDefaultLogger() ILogger {
 	return l
 }
 
-func newLogger(json bool, level Level) (ILogger, error) {
+func newLogger(json bool, level Level) (Logger, error) {
 
 	logConf := zap.Config{
 		Level:       zap.NewAtomicLevelAt(convertLevel(level)),
@@ -118,7 +118,7 @@ func convertLevel(l Level) zapcore.Level {
 	}
 }
 
-func setDefaultLogger(l ILogger) {
+func setDefaultLogger(l Logger) {
 	def = l
 }
 
@@ -131,4 +131,4 @@ func (l *logger) With(args ...interface{}) *logger {
 	return &logger{l.SugaredLogger.With(args)}
 }
 
-var _ ILogger = (*logger)(nil)
+var _ Logger = (*logger)(nil)
